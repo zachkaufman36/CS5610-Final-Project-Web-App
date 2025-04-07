@@ -6,7 +6,7 @@ import "./editor.css";
 import { useDispatch, useSelector } from "react-redux";
 import { useState } from "react";
 import * as coursesClient from "../client";
-import * as assignmentsClient from "./client";
+import * as quizzesClient from "./client";
 
 export default function QuizEditor({ cid }:
     {cid: string}
@@ -36,7 +36,7 @@ export default function QuizEditor({ cid }:
     const [quizPoints, setQuizPoints] = useState(filteredQuizzes[0].points);
     
     const saveQuiz = async (quiz: any) => {
-        await assignmentsClient.updateAssignment(quiz);
+        await quizzesClient.updateQuiz(quiz);
         dispatch(updateQuiz(quiz));
       };
     
@@ -44,7 +44,7 @@ export default function QuizEditor({ cid }:
     const createQuizForCourse = async (title: string, course: string, release_date: string, due_date: string, points: string) => {
         if (!cid) return;
         const newQuiz = {title: title, course: course, release_date: release_date, due_date: due_date, points: points};
-        const quiz = await coursesClient.createAssignmentForCourse(cid, newQuiz);
+        const quiz = await coursesClient.createQuizForCourse(cid, newQuiz);
         dispatch(addQuiz(quiz));
     };
 

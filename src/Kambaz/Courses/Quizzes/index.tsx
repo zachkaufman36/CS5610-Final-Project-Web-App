@@ -3,7 +3,6 @@ import QuizControls from "./QuizControls";
 import { BsGripVertical, BsSearch } from "react-icons/bs";
 import QuizModuleControls from "./QuizModuleControls";
 import { IoIosPaper } from "react-icons/io";
-import { useParams } from "react-router";
 import "./index.css"
 import QuizStatus from "./QuizStatus";
 import { deleteQuiz, setQuizzes } from "./reducer";
@@ -11,20 +10,20 @@ import { useSelector, useDispatch } from "react-redux";
 import EditProtection from "../../Account/EditProtection";
 import QuizProtection from "./QuizProtection";
 import * as coursesClient from "../client";
-import * as assignmentsClient from "./client";
+import * as quizzesClient from "./client";
 import { useEffect } from "react";
 
 export default function Quizzes( {cid} : { cid: string }) {
   const { quizzes } = useSelector((state: any) => state.quizReducer);
   const dispatch = useDispatch();
 
-  const removeQuiz = async (moduleId: string) => {
-    await assignmentsClient.deleteAssignment(moduleId);
-    dispatch(deleteQuiz(moduleId));
+  const removeQuiz = async (quizId: string) => {
+    await quizzesClient.deleteQuiz(quizId);
+    dispatch(deleteQuiz(quizId));
   };
 
   const fetchQuizzes = async () => {
-    const quizzes = await coursesClient.findAssignmentsForCourse(cid as string);
+    const quizzes = await coursesClient.findQuizzesForCourse(cid as string);
     dispatch(setQuizzes(quizzes));
   };
   useEffect(() => {

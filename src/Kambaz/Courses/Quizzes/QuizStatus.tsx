@@ -3,6 +3,7 @@ import { IoEllipsisVertical } from "react-icons/io5";
 import { FaTrash } from "react-icons/fa";
 import GreenCheckmark from "./GreenCheckmark";
 import EditProtection from "../../Account/EditProtection";
+import { Navigate, useNavigate } from "react-router";
 
 function deletePopup(
   { quizId, deleteQuiz }: 
@@ -14,9 +15,10 @@ function deletePopup(
 }
 
 export default function QuizStatus(
-  { quizId, deleteQuiz }: 
-  { quizId: string; deleteQuiz: (quizId: string) => void; }
+  { cid, quizId, deleteQuiz }: 
+  { cid: string; quizId: string; deleteQuiz: (quizId: string) => void; }
 ) {
+  const navigate = useNavigate();
   const [showDropDown, setShowDropDown] = useState<boolean>(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   
@@ -28,7 +30,8 @@ export default function QuizStatus(
   
   const handleOptionSelect = (option: string) => {
     if (option === "Edit") {
-        
+      // Not going to the right place yet
+      navigate(`/Kambaz/Courses/${cid}/Quizzes/${quizId}`);
     }
     if (option === "Delete") {
       deletePopup({ quizId, deleteQuiz });

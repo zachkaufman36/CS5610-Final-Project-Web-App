@@ -30,6 +30,24 @@ export default function Quizzes( {cid} : { cid: string }) {
     fetchQuizzes();
   }, []);
 
+  function compareDates({ due_date, available_date }: { due_date: string; available_date: string }) {
+    const currentDate = new Date();
+    const quiz_due_date = new Date(due_date);
+    const quiz_available_date = new Date(available_date);
+
+    if (quiz_available_date > currentDate) {
+      return "Not available until"
+    }
+
+    if (quiz_available_date < currentDate && quiz_due_date > currentDate) {
+      return "Available"
+    }
+
+    if (quiz_due_date < currentDate) {
+      return "Closed"
+    }
+  }
+
   function QuizName({quizId, quizTitle}: {quizId: string; quizTitle: string}) {
     if (QuizProtection()) {
       return (<a href={`#/Kambaz/Courses/${cid}/Quizzes/${quizId}`} className="wd-quiz-link" style={{ color: "black", textDecoration: "None"}}>
@@ -72,7 +90,7 @@ export default function Quizzes( {cid} : { cid: string }) {
                 <b>{assignment.title}</b>
               </a> */}
               <QuizName quizTitle={quiz.title} quizId={quiz._id} />
-              <span><span id="wd-multiple-modules"> Multiple Modules</span> | <b>Not available until</b> {quiz.release_date} | Due {quiz.due_date} | {quiz.points}</span> <QuizStatus quizId = {quiz._id}
+              <span><span id="wd-multiple-modules"> Multiple Modules</span> | <b>{compareDates({due_date: quiz.due_date, available_date: quiz.available_date})}</b> {quiz.available_date} | Due {quiz.due_date} | {quiz.points}</span> <QuizStatus cid = {cid} quizId = {quiz._id}
               deleteQuiz={(quizId) => {removeQuiz(quizId)}}/> </ListGroup.Item>
             </ListGroup>
             ))}

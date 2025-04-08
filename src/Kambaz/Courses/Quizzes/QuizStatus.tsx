@@ -2,8 +2,12 @@ import { useState, useRef, useEffect } from "react";
 import { IoEllipsisVertical } from "react-icons/io5";
 import { FaTrash } from "react-icons/fa";
 import GreenCheckmark from "./GreenCheckmark";
+import CrossOutRed from "./CrossOut";
 import EditProtection from "../../Account/EditProtection";
-import { Navigate, useNavigate } from "react-router";
+import { useNavigate } from "react-router";
+import * as quizzesClient from "./client";
+import { updateQuiz } from "./reducer";
+import { useDispatch } from "react-redux";
 
 function deletePopup(
   { quizId, deleteQuiz }: 
@@ -15,14 +19,23 @@ function deletePopup(
 }
 
 export default function QuizStatus(
-  { cid, quizId, deleteQuiz }: 
-  { cid: string; quizId: string; deleteQuiz: (quizId: string) => void; }
+  { cid, quizId, deleteQuiz, quiz }: 
+  { cid: string; quizId: string; deleteQuiz: (quizId: string) => void; quizPublished: string; quiz: any }
 ) {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const [ published, setPublished ] = useState<boolean>(false);
   const [showDropDown, setShowDropDown] = useState<boolean>(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   
-  const options = ["Edit", "Delete", "Publish"];
+  const options = ["Edit", "Delete", published ? "Unpublish" : "Publish"];
+
+  const updatePublished = async (quiz: any) => {
+    setPublished(!published);
+    const updQuiz = {...quiz, published: published};
+    await quizzesClient.updateQuiz(updQuiz);
+    dispatch(updateQuiz(quiz));
+  }
   
   const toggleDropDown = () => {
     setShowDropDown(!showDropDown);
@@ -33,11 +46,13 @@ export default function QuizStatus(
       // Not going to the right place yet
       navigate(`/Kambaz/Courses/${cid}/Quizzes/${quizId}`);
     }
-    if (option === "Delete") {
+
+    else if (option === "Delete") {
       deletePopup({ quizId, deleteQuiz });
     }
-    if (option === "Publish") {
 
+    else {
+      updatePublished(quiz);
     }
     setShowDropDown(false);
   };
@@ -57,15 +72,14 @@ export default function QuizStatus(
   
   return (
     <div className="float-end position-relative">
-      <GreenCheckmark />
-      <EditProtection>
-        <FaTrash className="text-danger me-1" onClick={() => deletePopup({quizId, deleteQuiz})} />
+      {published ? <GreenCheckmark /> : <CrossOutRed />}
+      <EditProtection>     
+        <IoEllipsisVertical 
+          className="fs-4 cursor-pointer" 
+          onClick={toggleDropDown} 
+          style={{ cursor: 'pointer' }}
+        />
       </EditProtection>
-      <IoEllipsisVertical 
-        className="fs-4 cursor-pointer" 
-        onClick={toggleDropDown} 
-        style={{ cursor: 'pointer' }}
-      />
       
       {showDropDown && (
         <div 

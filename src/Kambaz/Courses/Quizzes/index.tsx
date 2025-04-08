@@ -90,7 +90,7 @@ export default function Quizzes( {cid} : { cid: string }) {
                 <b>{assignment.title}</b>
               </a> */}
               <QuizName quizTitle={quiz.title} quizId={quiz._id} />
-              <span><span id="wd-multiple-modules"> Multiple Modules</span> | <b>{compareDates({due_date: quiz.due_date, available_date: quiz.available_date})}</b> {quiz.available_date} | Due {quiz.due_date} | {quiz.points}</span> <QuizStatus cid = {cid} quizId = {quiz._id}
+              <span> <b>{compareDates({due_date: quiz.due_date, available_date: quiz.available_date})} | </b> {quiz.available_date} | Due {quiz.due_date} | {quiz.points}</span> <QuizStatus quiz = {quiz} quizPublished={quiz.published} cid = {cid} quizId = {quiz._id}
               deleteQuiz={(quizId) => {removeQuiz(quizId)}}/> </ListGroup.Item>
             </ListGroup>
             ))}

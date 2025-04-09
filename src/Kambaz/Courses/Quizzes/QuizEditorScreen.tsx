@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Nav } from 'react-bootstrap';
 import { useLocation } from 'react-router-dom';
 import QuizEditor from './Editor';
 import QuestionsEditor from './QuestionsEditor';
@@ -7,32 +6,33 @@ import QuestionsEditor from './QuestionsEditor';
 export default function QuizEditorScreeen({ qid }: { qid: string }) {
     const { pathname } = useLocation();
 
-    const [step, setStep] = useState("Editor");
+    const [step, setStep] = useState('Editor');
 
     return (
         <div id="wd-labs" className="container-fluid">
-            <Nav variant="pills" id="wd-toc">
-                <Nav.Item>
-                    <span
-                        className="nav-link"
-                        id="wd-a1"
+            <ul className="nav nav-tabs">
+                <li className="nav-item">
+                    <a
+                        className={`nav-link ${
+                            step === 'Editor' ? 'active text-danger' : 'text-black'
+                        }`}
                         onClick={() => setStep('Editor')}
-                        style={{ cursor: 'pointer' }}
                     >
-                        Details
-                    </span>
-                </Nav.Item>
-                <Nav.Item>
-                    <span
-                        className="nav-link"
-                        id="wd-a1"
+                        Editor
+                    </a>
+                </li>
+                <li className="nav-item">
+                    <a
+                        className={`nav-link ${
+                            step === 'Questions' ? 'active text-danger' : 'text-black'
+                        }`}
                         onClick={() => setStep('Questions')}
-                        style={{ cursor: 'pointer' }}
                     >
                         Questions
-                    </span>
-                </Nav.Item>
-            </Nav>
+                    </a>
+                </li>
+            </ul>
+
             <div>
                 {step === '' ? (
                     <QuizEditor cid={qid} />

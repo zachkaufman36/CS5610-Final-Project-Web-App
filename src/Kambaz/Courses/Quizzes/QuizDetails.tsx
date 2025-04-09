@@ -8,7 +8,7 @@ export default function QuizDetails() {
     const { qid } = useParams();
     const { quizzes } = useSelector((state: any) => state.quizReducer);
     const filteredQuiz = quizzes.find((quiz: any) => quiz._id === qid);
-    const dontDisplay = ['_id', 'published', 'title', 'course', 'due_date', 'available_date', 'until_date', 'access_code']
+    const dontDisplay = ['_id', 'published', 'title', 'course', 'due_date', 'available_date', 'until_date', 'access_code', 'instructions']
 
     function createTable() {
         const keysToDisplay = Object.keys(filteredQuiz).filter(key => !dontDisplay.includes(key));

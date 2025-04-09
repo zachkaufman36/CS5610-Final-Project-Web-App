@@ -9,6 +9,7 @@ import QuizEditor from "./Quizzes/Editor";
 import { Navigate, Route, Routes, useParams, useLocation } from "react-router";
 import { FaAlignJustify } from "react-icons/fa";
 import PeopleTable from "./People/Table";
+import Hello from "./Quizzes/DELETEME";
 
 export default function Courses({ courses }: { courses : any[]; }) {
   const { cid } = useParams();
@@ -33,7 +34,8 @@ export default function Courses({ courses }: { courses : any[]; }) {
             <Route path="Assignment/createNew" element={<AssignmentEditor cid={course._id} />} />
             <Route path="Quizzes" element={<Quizzes cid={course._id}/>} />
             <Route path="Quizzes/:qid" element={<QuizDetails />} />
-            <Route path="Quizzes/:qid/edit" element={<QuizEditor cid={course._id} />} />
+            <Route path="Quizzes/:qid/edit/details" element={<QuizEditor cid={course._id} />} />
+            <Route path="Quizzes/:qid/edit/questions" element={<Hello />} />
             <Route path="Quizzes/createNew" element={<QuizEditor cid={course._id} />} />
             <Route path="People" element={<PeopleTable />} />
           </Routes>

@@ -11,7 +11,7 @@ export default function QuizDetailsButtons({ cid, qid } : { cid: string; qid: st
         if (currentUser.role === "FACULTY") {
             return (
                 <div>
-                    <Button variant="secondary" size="lg" className="me-1 float-end" id="wd-edit-quiz-btn" onClick={() => {navigate(`/Kambaz/Courses/${cid}/Quizzes/${qid}/edit`)}}> 
+                    <Button variant="secondary" size="lg" className="me-1 float-end" id="wd-edit-quiz-btn" onClick={() => {navigate(`/Kambaz/Courses/${cid}/Quizzes/${qid}/edit/details`)}}> 
                         <FaPencilAlt className="me-1"/>
                         Edit
                     </Button>

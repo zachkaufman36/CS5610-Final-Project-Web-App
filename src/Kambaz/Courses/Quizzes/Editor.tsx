@@ -7,6 +7,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useState } from "react";
 import * as coursesClient from "../client";
 import * as quizzesClient from "./client";
+import Pills from "./Pills";
 
 export default function QuizEditor({ cid }:
     {cid: string}
@@ -176,7 +177,7 @@ export default function QuizEditor({ cid }:
 
     return (
       <div id="wd-quizzes-editor">
-        
+        <Pills />
         <Form.Group as={Row} controlId="quiz-name" id="wd-name" className="mb-3">
             <Form.Label column sm={3}><b>Quiz Name</b></Form.Label>
             <Col sm={12}>

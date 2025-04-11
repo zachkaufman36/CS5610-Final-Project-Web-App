@@ -18,9 +18,9 @@ export default function QuizDetails() {
         };
 
         const formatAnswer = (ans: string) => {
-            if (ans === "true") {
+            if (ans) {
                 return "No"
-            } else if (ans === "false") {
+            } else if (!ans) {
                 return "Yes"
             } else {
                 return ans

@@ -125,18 +125,18 @@ export default function QuizEditor({ cid }:
     const [quizPoints, setQuizPoints] = useState(filteredQuizzes[0].points);
     const [quizType, setQuizType] = useState(filteredQuizzes[0].quiz_type);
     const [quizGroup, setQuizGroup] = useState(filteredQuizzes[0].assignment_group);
-    const [shuffleAnswers, setShuffleAnswers] = useState(filteredQuizzes[0].shuffle_answers === "true");
-    const [timeLimitBool, setTimeLimitBool] = useState(filteredQuizzes[0].time_limit_bool === "true");
+    const [shuffleAnswers, setShuffleAnswers] = useState(filteredQuizzes[0].shuffle_answers);
+    const [timeLimitBool, setTimeLimitBool] = useState(filteredQuizzes[0].time_limit_bool);
     const [timeLimit, setTimeLimit] = useState(filteredQuizzes[0].time_limit);
-    const [multipleAttempts, setMultipleAttempts] = useState(filteredQuizzes[0].multiple_attempts === "true");
+    const [multipleAttempts, setMultipleAttempts] = useState(filteredQuizzes[0].multiple_attempts);
     const [multipleAttemptLimit, setMultipleAttemptLimit] = useState(filteredQuizzes[0].attempts);
-    const [showCorrectAnswers, setShowCorrectAnswers] = useState(filteredQuizzes[0].show_correct_answers === "true");
-    const [accessCodeBool, setAccessCodeBool] = useState(filteredQuizzes[0].uses_access_code === "true");
+    const [showCorrectAnswers, setShowCorrectAnswers] = useState(filteredQuizzes[0].show_correct_answers);
+    const [accessCodeBool, setAccessCodeBool] = useState(filteredQuizzes[0].uses_access_code);
     const [accessCode, setAccessCode] = useState(filteredQuizzes[0].access_code);
-    const [singleQuestion, setSingleQuestion] = useState(filteredQuizzes[0].single_question_at_a_time === "true");
-    const [webcamRequired, setWebcamRequired] = useState(filteredQuizzes[0].webcam === "true");
-    const [lockQuestions, setLockQuestions] = useState(filteredQuizzes[0].lock_after_answer === "true");
-    const [quizRd, setQuizRd] = useState(filteredQuizzes[0].release_date);
+    const [singleQuestion, setSingleQuestion] = useState(filteredQuizzes[0].single_question_at_a_time);
+    const [webcamRequired, setWebcamRequired] = useState(filteredQuizzes[0].webcam);
+    const [lockQuestions, setLockQuestions] = useState(filteredQuizzes[0].lock_after_answer);
+    const [quizRd, setQuizRd] = useState(filteredQuizzes[0].available_date);
     const [quizDd, setQuizDd] = useState(filteredQuizzes[0].due_date);
     const [quizUd, setQuizUd] = useState(filteredQuizzes[0].until_date);
     
@@ -297,7 +297,7 @@ export default function QuizEditor({ cid }:
                             <Col md={6}>
                                 <Form.Group controlId="available-from" id="wd-available-from" className="md-3">
                                     <Form.Label><b>Available From</b></Form.Label>
-                                    <FormControl type="datetime" defaultValue={filteredQuizzes[0].release_date} onChange={(e) => setQuizRd(e.target.value)}/>
+                                    <FormControl type="datetime" defaultValue={filteredQuizzes[0].available_date} onChange={(e) => setQuizRd(e.target.value)}/>
                                 </Form.Group>
                             </Col>
                             <Col md={6}>

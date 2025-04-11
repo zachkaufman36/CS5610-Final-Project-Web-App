@@ -25,10 +25,8 @@ export default function Dashboard(
 
   // This is happening, however you have to click enroll for it to properly display
   const unenrollUser = async (event: any, currentUser: any, course: any) => {
-    console.log(enrollments);
     event.preventDefault();
     await enrollmentClient.unenrollUserInCourse(currentUser, course);
-    console.log("Hello from after await");
     setEnrollments((prevEnrollments: any) => prevEnrollments.filter((enrollment: any) => !(enrollment.user === currentUser._id && enrollment.course === course._id)));
     dispatch(unenroll({userId: currentUser._id, courseId: course._id}))
   }
@@ -47,8 +45,6 @@ export default function Dashboard(
   useEffect(() => {
     fetchEnrollments();
   }, []);
-
-  //console.log(enrollments)
 
   function ButtonsForTypeOfUser({ enrolling, setEnrolling }: { enrolling: boolean, setEnrolling: (value: boolean) => void }) {
     if (currentUser.role === "FACULTY") {

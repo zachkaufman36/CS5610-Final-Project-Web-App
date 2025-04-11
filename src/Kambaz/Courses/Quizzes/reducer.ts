@@ -24,20 +24,20 @@ const assignmentsSlice = createSlice({
               state.quizzes = [...state.quizzes, newAssignment] as any;
         },
         
-        deleteQuiz: (state, { payload: assignmentId }) => {
+        deleteQuiz: (state, { payload: quizId }) => {
             state.quizzes = state.quizzes.filter(
-                (a: any) => a._id !== assignmentId);
+                (q: any) => q._id !== quizId);
         },
 
-        updateQuiz: (state, { payload: assignment }) => {   
-            state.quizzes = state.quizzes.map((a: any) =>
-                a._id === assignment._id ? assignment : a
+        updateQuiz: (state, { payload: quiz }) => {   
+            state.quizzes = state.quizzes.map((q: any) =>
+                q._id === quiz._id ? quiz : q
               ) as any;
         },
 
-        editQuiz: (state, { payload: moduleId }) => {
-            state.quizzes = state.quizzes.map((a: any) =>
-              a._id === moduleId ? { ...a, editing: true } : a
+        editQuiz: (state, { payload: quizId }) => {
+            state.quizzes = state.quizzes.map((q: any) =>
+              q._id === quizId ? { ...q, editing: true } : q
             ) as any;
           },
 

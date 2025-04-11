@@ -24,17 +24,18 @@ export default function QuizStatus(
 ) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const [ published, setPublished ] = useState<boolean>(false);
+  const [ published, setPublished ] = useState(quiz.published);
   const [showDropDown, setShowDropDown] = useState<boolean>(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  
+
   const options = ["Edit", "Delete", published ? "Unpublish" : "Publish"];
 
   const updatePublished = async (quiz: any) => {
+    const newPublishedState = !published;
     setPublished(!published);
-    const updQuiz = {...quiz, published: published};
+    const updQuiz = {...quiz, published: newPublishedState};
     await quizzesClient.updateQuiz(updQuiz);
-    dispatch(updateQuiz(quiz));
+    dispatch(updateQuiz(updQuiz));
   }
   
   const toggleDropDown = () => {
@@ -43,7 +44,6 @@ export default function QuizStatus(
   
   const handleOptionSelect = (option: string) => {
     if (option === "Edit") {
-      // Not going to the right place yet
       navigate(`/Kambaz/Courses/${cid}/Quizzes/${quizId}`);
     }
 

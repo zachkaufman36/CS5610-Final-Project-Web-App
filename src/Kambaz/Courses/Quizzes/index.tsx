@@ -48,13 +48,51 @@ export default function Quizzes( {cid} : { cid: string }) {
     }
   }
 
+  function publishedOrNot() {
+    if (QuizProtection()) {
+      return (
+        <div>
+          { quizzes.map((quiz: any) => (            
+            <ListGroup className="wd-lessons rounded-0">
+            <ListGroup.Item className="wd-lesson p-3 ps-1" key={quiz._id}>
+            <BsGripVertical className="me-2 fs-3" /> <IoIosPaper className="text-success me-2 fs-3"/> 
+            {/* <a href={`#/Kambaz/Courses/${cid}/Assignments/${assignment._id}`} className="wd-assignment-link" style={{ color: "black", textDecoration: "None"}}>
+              <b>{assignment.title}</b>
+            </a> */}
+            <QuizName quizTitle={quiz.title} quizId={quiz._id} />
+            <span> <b>{compareDates({due_date: quiz.due_date, available_date: quiz.available_date})} | </b> {quiz.available_date} | Due {quiz.due_date} | {quiz.points}</span> <QuizStatus quiz = {quiz} quizPublished={quiz.published} cid = {cid} quizId = {quiz._id}
+            deleteQuiz={(quizId) => {removeQuiz(quizId)}}/> </ListGroup.Item>
+          </ListGroup>
+          )) }
+        </div>
+      )
+    } else {
+      return (
+      <div>
+        { quizzes.filter((quiz: any) => quiz.published).map((quiz: any) => (            
+            <ListGroup className="wd-lessons rounded-0">
+            <ListGroup.Item className="wd-lesson p-3 ps-1" key={quiz._id}>
+            <BsGripVertical className="me-2 fs-3" /> <IoIosPaper className="text-success me-2 fs-3"/> 
+            {/* <a href={`#/Kambaz/Courses/${cid}/Assignments/${assignment._id}`} className="wd-assignment-link" style={{ color: "black", textDecoration: "None"}}>
+              <b>{assignment.title}</b>
+            </a> */}
+            <QuizName quizTitle={quiz.title} quizId={quiz._id} />
+            <span> <b>{compareDates({due_date: quiz.due_date, available_date: quiz.available_date})} | </b> {quiz.available_date} | Due {quiz.due_date} | {quiz.points}</span> <QuizStatus quiz = {quiz} quizPublished={quiz.published} cid = {cid} quizId = {quiz._id}
+            deleteQuiz={(quizId) => {removeQuiz(quizId)}}/> </ListGroup.Item>
+          </ListGroup>
+          )) }
+      </div>
+      )
+    }
+  }
+
   function QuizName({quizId, quizTitle}: {quizId: string; quizTitle: string}) {
     if (QuizProtection()) {
       return (<a href={`#/Kambaz/Courses/${cid}/Quizzes/${quizId}`} className="wd-quiz-link" style={{ color: "black", textDecoration: "None"}}>
       <b>{quizTitle}</b>
     </a>)
     } else {
-      return (<a className="wd-quiz-link" style={{ color: "black", textDecoration: "None"}}>
+      return (<a className="wd-quiz-link" href={`#/Kambaz/Courses/${cid}/Quizzes/${quizId}`} style={{ color: "black", textDecoration: "None"}}>
         <b>{quizTitle}</b>
       </a>)
     }
@@ -82,18 +120,7 @@ export default function Quizzes( {cid} : { cid: string }) {
           <ListGroup.Item className="wd-module p-0 mb-5 fs-5 border-gray">
             <div className="wd-title p-3 ps-2 bg-secondary"> <BsGripVertical className="me-2 fs-3" /> Quizzes <QuizModuleControls /> </div>
             { /* Ask about how to get the visual style that they want. Page 98 is an example */ }
-            {quizzes.map((quiz: any) => (            
-              <ListGroup className="wd-lessons rounded-0">
-              <ListGroup.Item className="wd-lesson p-3 ps-1" key={quiz._id}>
-              <BsGripVertical className="me-2 fs-3" /> <IoIosPaper className="text-success me-2 fs-3"/> 
-              {/* <a href={`#/Kambaz/Courses/${cid}/Assignments/${assignment._id}`} className="wd-assignment-link" style={{ color: "black", textDecoration: "None"}}>
-                <b>{assignment.title}</b>
-              </a> */}
-              <QuizName quizTitle={quiz.title} quizId={quiz._id} />
-              <span> <b>{compareDates({due_date: quiz.due_date, available_date: quiz.available_date})} | </b> {quiz.available_date} | Due {quiz.due_date} | {quiz.points}</span> <QuizStatus quiz = {quiz} quizPublished={quiz.published} cid = {cid} quizId = {quiz._id}
-              deleteQuiz={(quizId) => {removeQuiz(quizId)}}/> </ListGroup.Item>
-            </ListGroup>
-            ))}
+            {publishedOrNot()}
           </ListGroup.Item> 
         </ListGroup>
       </div>

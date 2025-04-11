@@ -31,24 +31,7 @@ export default function QuestionsEditor({ qid }: { qid: any }) {
     ]);
 
     const [showModal, setShowModal] = useState(false);
-    // const [newQuestion, setNewQuestion] = useState({
-    //     name: '',
-    //     type: 'Multiple Choice',
-    //     actualAnswer: 'correct answer',
-    //     userAnswer: 'input',
-    // });
 
-    // const handleAddQuestion = () => {
-    //     const id = questions.length + 1;
-    //     setQuestions([...questions, { id, ...newQuestion }]);
-    //     setNewQuestion({
-    //         name: '',
-    //         type: 'text',
-    //         actualAnswer: 'correct answer',
-    //         userAnswer: 'input',
-    //     });
-    //     setShowModal(false);
-    // };
     // Initial state for new question
     const [newQuestion, setNewQuestion] = useState({
         name: '',

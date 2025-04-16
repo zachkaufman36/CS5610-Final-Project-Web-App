@@ -1,7 +1,16 @@
 import { useState } from 'react';
 import { Button, Form, FormLabel } from 'react-bootstrap';
 
-export default function QuizzPreview({ qid }: { qid: string }) {
+export default function QuizzPreview({
+    qid,
+    maxAttempts = 2,
+}: {
+    qid: string;
+    maxAttempts?: number;
+}) {
+    // TODO: update to fetch attempts
+    // const maxAttempts = 3;
+
     // Define question type
     type Question = {
         id: number;
@@ -13,6 +22,16 @@ export default function QuizzPreview({ qid }: { qid: string }) {
         editing: string;
         points: number;
     };
+
+    // Define attempt type to store previous attempts
+    type Attempt = {
+        score: number;
+        totalPoints: number;
+        date: Date;
+    };
+
+    const [attempts, setAttempts] = useState<Attempt[]>([]);
+    const [showAttempts, setShowAttempts] = useState<boolean>(false);
 
     // Initialize questions with the existing data
     const initialQuestions: Question[] = [
@@ -75,7 +94,22 @@ export default function QuizzPreview({ qid }: { qid: string }) {
 
     // Reset the quiz
     const handleReset = () => {
-        setQuestions((prev: any) =>
+        // Check if we've reached the maximum number of attempts
+        if (attempts.length >= maxAttempts - 1) {
+            return; // Don't allow any more attempts
+        }
+        // Store current attempt
+        if (submitted) {
+            const newAttempt: Attempt = {
+                score: score,
+                totalPoints: totalPoints,
+                date: new Date(),
+            };
+
+            setAttempts((prev) => [...prev, newAttempt]);
+        }
+
+        setQuestions(() =>
             initialQuestions.map((q) => ({
                 ...q,
                 userAnswer: '',
@@ -83,9 +117,17 @@ export default function QuizzPreview({ qid }: { qid: string }) {
         );
         setSubmitted(false);
         setScore(0);
-
     };
-    console.log(submitted);
+
+    // Format date for display
+    const formatDate = (date: Date) => {
+        return date.toLocaleString();
+    };
+
+    // Toggle showing previous attempts
+    const toggleAttempts = () => {
+        setShowAttempts((prev) => !prev);
+    };
 
     // Render different input types based on question type
     const renderQuestionInput = (question: Question) => {
@@ -159,19 +201,130 @@ export default function QuizzPreview({ qid }: { qid: string }) {
         );
     };
 
+    const totalPoints = questions.reduce((acc, q) => acc + q.points, 0);
+
+    // Get the highest score from all attempts including current
+    const getHighestScore = () => {
+        if (attempts.length === 0 && !submitted) {
+            return null;
+        }
+
+        const allScores = [...attempts.map((a) => a.score), ...(submitted ? [score] : [])];
+
+        return Math.max(...allScores);
+    };
+
+    // Get the best percentage score
+    const getBestPercentage = () => {
+        const highest = getHighestScore();
+        return highest !== null ? Math.round((highest / totalPoints) * 100) : null;
+    };
+
     return (
         <div className="container py-4">
+            {/* TODO: if user is faculty show prevoew else show Quizz 'ta/e' */}
             <h2 className="mb-4">Quiz Preview</h2>
-            <Form
-                onSubmit={() => {
-                    // submit function not needed here for now
-                }}
-            >
+
+            {/* Attempts information */}
+            <div className="mb-3 d-flex justify-content-between align-items-center">
+                <div>
+                    <span className="badge bg-info">
+                        Attempt {attempts.length + (submitted ? 1 : 0)} of {maxAttempts}
+                    </span>
+                </div>
+                {score > 0 && submitted && (
+                    <div>
+                        <span
+                            className={`badge ${
+                                score / totalPoints >= 0.7 ? 'bg-success' : 'bg-danger'
+                            }`}
+                        >
+                            {Math.round((score / totalPoints) * 100)}% Score
+                        </span>
+                    </div>
+                )}
+            </div>
+
+            {/* Display previous attempts if there are any */}
+            {attempts.length > 0 && (
+                <div className="mb-4">
+                    <Button
+                        variant="outline-secondary"
+                        size="sm"
+                        onClick={toggleAttempts}
+                        className="mb-2"
+                    >
+                        {showAttempts
+                            ? 'Hide Previous Attempts'
+                            : `Show Previous Attempts (${attempts.length})`}
+                    </Button>
+
+                    {showAttempts && (
+                        <div className="border p-3 rounded bg-light">
+                            <h5>Previous Attempts</h5>
+                            <table className="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Date</th>
+                                        <th>Score</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {attempts.map((attempt, idx) => (
+                                        <tr key={idx}>
+                                            <td>{idx + 1}</td>
+                                            <td>{formatDate(attempt.date)}</td>
+                                            <td>
+                                                {attempt.score}/{attempt.totalPoints} (
+                                                {Math.round(
+                                                    (attempt.score / attempt.totalPoints) * 100
+                                                )}
+                                                %)
+                                            </td>
+                                        </tr>
+                                    ))}
+                                    {submitted && (
+                                        <tr className="table-active">
+                                            <td>{attempts.length + 1} (Current)</td>
+                                            <td>{formatDate(new Date())}</td>
+                                            <td>
+                                                {score}/{totalPoints} (
+                                                {Math.round((score / totalPoints) * 100)}%)
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                                <tfoot>
+                                    <tr className="table-info">
+                                        <td colSpan={2}>
+                                            <strong>Best Score:</strong>
+                                        </td>
+                                        <td>
+                                            {getHighestScore() !== null ? (
+                                                <strong>
+                                                    {getHighestScore()}/{totalPoints} (
+                                                    {getBestPercentage()}%)
+                                                </strong>
+                                            ) : (
+                                                'No attempts yet'
+                                            )}
+                                        </td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {/* Quiz form */}
+            <Form>
                 {questions.map((q, index) => (
                     <div key={q.id} className="mb-4 p-3 border rounded">
                         <h5>Question {index + 1}</h5>
                         <FormLabel>
-                            {q.name}{' '}
+                            {q.name}
                             <small>
                                 ({q.points} {q.points === 1 ? 'point' : 'points'})
                             </small>
@@ -188,13 +341,24 @@ export default function QuizzPreview({ qid }: { qid: string }) {
                         </Button>
                     ) : (
                         <>
-                            <Button variant="primary" onClick={handleReset}>
-                                Retake Quiz
-                            </Button>
+                            {attempts.length < maxAttempts - 1 ? (
+                                <Button variant="primary" onClick={handleReset}>
+                                    Retake Quiz ({maxAttempts - attempts.length - 1} attempts
+                                    remaining)
+                                </Button>
+                            ) : attempts.length === maxAttempts - 1 ? (
+                                <Button variant="secondary" onClick={handleReset}>
+                                    No Attempts Remaining
+                                </Button>
+                            ) : (
+                                <Button variant="secondary" disabled>
+                                    No Attempts Remaining
+                                </Button>
+                            )}
                             <div className="ms-3 d-flex align-items-center">
                                 <strong>
-                                    Your Score: {score}/
-                                    {questions.reduce((acc, q) => acc + q.points, 0)} points
+                                    Your Score: {score}/{totalPoints} points (
+                                    {Math.round((score / totalPoints) * 100)}%)
                                 </strong>
                             </div>
                         </>

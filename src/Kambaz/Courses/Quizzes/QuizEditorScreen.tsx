@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import QuizEditor from './Editor';
 import QuestionsEditor from './QuestionsEditor';
+import QuizzPreview from './QuizzPreview';
 
 export default function QuizEditorScreeen({ qid }: { qid: string }) {
     const { pathname } = useLocation();
@@ -31,6 +32,16 @@ export default function QuizEditorScreeen({ qid }: { qid: string }) {
                         Questions
                     </a>
                 </li>
+                <li className="nav-item">
+                    <a
+                        className={`nav-link ${
+                            step === 'Preview' ? 'active text-danger' : 'text-black'
+                        }`}
+                        onClick={() => setStep('Preview')}
+                    >
+                        Preview
+                    </a>
+                </li>
             </ul>
 
             <div>
@@ -38,6 +49,8 @@ export default function QuizEditorScreeen({ qid }: { qid: string }) {
                     <QuizEditor cid={qid} />
                 ) : step === 'Editor' ? (
                     <QuizEditor cid={qid} />
+                ) : step === 'Preview' ? (
+                    <QuizzPreview qid={qid} />
                 ) : (
                     <QuestionsEditor qid={qid} />
                 )}

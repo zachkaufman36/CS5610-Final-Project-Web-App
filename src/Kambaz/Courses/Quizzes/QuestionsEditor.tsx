@@ -173,7 +173,9 @@ export default function QuestionsEditor({ qid }: { qid: any }) {
                         <div key={q._id} className="col-12 mb-3">
                             <div className="card">
                                 <div className="card-header d-flex justify-content-between align-items-center">
-                                    <h5 className="mb-0">{q.title}</h5>
+                                    <h5 className="mb-0">
+                                        {q.title} ({q.points} points)
+                                    </h5>
                                     <div>
                                         {/* <span className="badge bg-primary me-2">{q.type}</span> */}
                                         <button
@@ -238,6 +240,29 @@ export default function QuestionsEditor({ qid }: { qid: any }) {
                                                         handleQuestionChange(
                                                             q._id,
                                                             'title',
+                                                            e.target.value
+                                                        )
+                                                    }
+                                                />
+                                            </div>
+
+                                            {/* Points */}
+                                            <div className="mb-3">
+                                                <label
+                                                    htmlFor={`question-${q._id}`}
+                                                    className="form-label"
+                                                >
+                                                    Points
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    className="form-control"
+                                                    id={`question-${q._id}`}
+                                                    value={q.points}
+                                                    onChange={(e) =>
+                                                        handleQuestionChange(
+                                                            q._id,
+                                                            'points',
                                                             e.target.value
                                                         )
                                                     }
@@ -442,6 +467,21 @@ export default function QuestionsEditor({ qid }: { qid: any }) {
                                             setNewQuestion({
                                                 ...newQuestion,
                                                 title: e.target.value,
+                                            })
+                                        }
+                                    />
+                                </div>
+                                <div className="mb-3">
+                                    <label className="form-label">Points</label>
+                                    <input
+                                        type="number"
+                                        className="form-control"
+                                        placeholder="1"
+                                        value={newQuestion.points}
+                                        onChange={(e) =>
+                                            setNewQuestion({
+                                                ...newQuestion,
+                                                points: parseInt(e.target.value) || 1,
                                             })
                                         }
                                     />

@@ -1,56 +1,48 @@
-import { useState } from 'react';
-
+import { useEffect, useState } from 'react';
+import * as client from './client';
 export default function QuestionsEditor({ qid }: { qid: any }) {
-    const [questions, setQuestions] = useState([
-        {
-            id: 1,
-            name: 'What is your name?',
-            type: 'fb',
-            actualAnswer: 'vinay',
-            userAnswer: '',
-            editing: 'false',
-        },
-        {
-            id: 2,
-            name: 'Is your age 100?',
-            type: 'tf',
-            options: ['true', 'false'],
-            actualAnswer: 'false',
-            userAnswer: '',
-            editing: 'false',
-        },
-        {
-            id: 3,
-            name: 'What is your favorite color?',
-            type: 'multiple-choice',
-            options: ['Red', 'Blue', 'Green'],
-            actualAnswer: 'red',
-            userAnswer: '',
-            editing: 'false',
-        },
-    ]);
+    const quizId = 'Q101';
+    // Define question type
+    type Question = {
+        _id: string;
+        title: string;
+        type: string;
+        options?: string[];
+        answer: string;
+        editing: string;
+        quizId: string;
+        points: number;
+    };
+    const [questions, setQuestions] = useState<Question[]>([]);
+
+    // Initialize questions with the existing data
+    const getQuestions = async (quizId: string) => {
+        const initialQuestions = await client.getQuestions(quizId);
+        setQuestions(initialQuestions);
+    };
 
     const [showModal, setShowModal] = useState(false);
 
     // Initial state for new question
     const [newQuestion, setNewQuestion] = useState({
-        name: '',
+        _id: '',
+        title: '',
         type: 'fb',
+        description: '',
         options: [''],
-        actualAnswer: '',
-        userAnswer: '',
+        answer: '',
+        quizId: quizId,
+        points: 0,
         editing: 'false',
     });
 
     // Function to add a new question
-    const handleAddQuestion = () => {
-        const id = questions.length + 1;
+    const handleAddQuestion = async () => {
 
         // Create the question object based on type
         let questionToAdd = {
-            id,
             ...newQuestion,
-            userAnswer: '', // Always start with empty user answer
+            _id: new Date().getTime().toString(),
         };
 
         // Ensure proper options format based on question type
@@ -66,16 +58,21 @@ export default function QuestionsEditor({ qid }: { qid: any }) {
             }
         }
 
+        await client.addQuestion(questionToAdd);
+
         // Add the new question to the questions array
         setQuestions([...questions, questionToAdd]);
 
         // Reset form for next question
         setNewQuestion({
-            name: '',
+            _id: '',
+            title: '',
             type: 'fb',
+            description: '',
             options: [''],
-            actualAnswer: '',
-            userAnswer: '',
+            answer: '',
+            quizId: quizId,
+            points: 0,
             editing: 'false',
         });
 
@@ -84,10 +81,10 @@ export default function QuestionsEditor({ qid }: { qid: any }) {
     };
 
     // Toggle edit mode for a question
-    const toggleEditMode = (questionId: number) => {
+    const toggleEditMode = (questionId: string) => {
         setQuestions(
             questions.map((q) => {
-                if (q.id === questionId) {
+                if (q._id === questionId) {
                     // Convert editing to a string if needed
                     const currentEditing = q.editing === 'true' ? 'true' : 'false';
                     const newEditing = currentEditing === 'true' ? 'false' : 'true';
@@ -99,10 +96,10 @@ export default function QuestionsEditor({ qid }: { qid: any }) {
     };
 
     // Handle changes to question fields
-    const handleQuestionChange = (questionId: any, field: any, value: any) => {
+    const handleQuestionChange = async (questionId: string, field: any, value: any) => {
         setQuestions(
             questions.map((q) => {
-                if (q.id === questionId) {
+                if (q._id === questionId) {
                     return { ...q, [field]: value };
                 }
                 return q;
@@ -111,9 +108,9 @@ export default function QuestionsEditor({ qid }: { qid: any }) {
     };
 
     // Save question (just turns off edit mode)
-    const saveQuestion = (questionId: number) => {
+    const saveQuestion = async (questionId: string) => {
         // Get the question to validate
-        const questionToSave = questions.find((q) => q.id === questionId);
+        const questionToSave = questions.find((q) => q._id === questionId);
 
         // Validate based on type
         if (questionToSave?.type === 'multiple-choice') {
@@ -122,9 +119,9 @@ export default function QuestionsEditor({ qid }: { qid: any }) {
                 const filteredOptions = questionToSave.options.filter((opt) => opt.trim() !== '');
 
                 // Update filtered options before saving
-                setQuestions(
+                await setQuestions(
                     questions.map((q) => {
-                        if (q.id === questionId) {
+                        if (q._id === questionId) {
                             return {
                                 ...q,
                                 options: filteredOptions,
@@ -134,41 +131,54 @@ export default function QuestionsEditor({ qid }: { qid: any }) {
                         return q;
                     })
                 );
-                return;
             }
         }
-
-        // For other types, just turn off editing
-        setQuestions(
-            questions.map((q) => {
-                if (q.id === questionId) {
-                    return { ...q, editing: 'false' };
-                }
-                return q;
-            })
-        );
+        else {// For other types, just turn off editing
+            await setQuestions(
+                questions.map((q) => {
+                    if (q._id === questionId) {
+                        return { ...q, editing: 'false' };
+                    }
+                    return q;
+                })
+            );
+        }
+        let questionToUpdate = questions.find((q) => q._id === questionId)!;
+        questionToUpdate = { ...questionToUpdate, editing: 'false' };
+        await client.updateQuestion(questionToUpdate._id, questionToUpdate);
     };
 
+    const deleteQuestion = async (qid:any) => {
+        if (window.confirm('Are you sure you want to delete this question?')) {
+            setQuestions(questions.filter((q) => q._id !== qid));
+            await client.deleteQuestion(qid);
+        }
+    }
+
+    useEffect(() => {
+        getQuestions(quizId);
+    }, []);
+    
     return (
         <div id="quiz-questions-editor" className="container py-4">
             <div className="d-flex justify-content-between align-items-center mb-4">
                 <h1 className="h4 fw-bold">Questions Editor</h1>
-                <button className="btn btn-primary" onClick={() => setShowModal(true)}>
+                <button className="btn btn-outline-danger" onClick={() => setShowModal(true)}>
                     + Add Question
                 </button>
             </div>
             <div className="container">
                 <div className="row">
                     {questions.map((q) => (
-                        <div key={q.id} className="col-12 mb-3">
+                        <div key={q._id} className="col-12 mb-3">
                             <div className="card">
                                 <div className="card-header d-flex justify-content-between align-items-center">
-                                    <h5 className="mb-0">Question {q.id}</h5>
+                                    <h5 className="mb-0">{q.title}</h5>
                                     <div>
                                         {/* <span className="badge bg-primary me-2">{q.type}</span> */}
                                         <button
-                                            className="btn btn-sm btn-outline-secondary"
-                                            onClick={() => toggleEditMode(q.id)}
+                                            className="btn btn-sm btn-outline-danger"
+                                            onClick={() => toggleEditMode(q._id)}
                                         >
                                             {q.editing === 'true' ? 'Cancel' : 'Edit'}
                                         </button>
@@ -178,8 +188,6 @@ export default function QuestionsEditor({ qid }: { qid: any }) {
                                 {q.editing !== 'true' ? (
                                     // View mode
                                     <div className="card-body">
-                                        <h6 className="card-title">{q.name}</h6>
-
                                         {/* Display options for multiple-choice or tf questions */}
                                         {(q.type === 'multiple-choice' || q.type === 'tf') &&
                                             q.options && (
@@ -203,16 +211,7 @@ export default function QuestionsEditor({ qid }: { qid: any }) {
                                             <div className="row">
                                                 <div className="col-md-6">
                                                     <div className="alert alert-info mb-0">
-                                                        <strong>Actual Answer:</strong>{' '}
-                                                        {q.actualAnswer}
-                                                    </div>
-                                                </div>
-                                                <div className="col-md-6">
-                                                    <div className="alert alert-secondary mb-0">
-                                                        <strong>User Answer:</strong>{' '}
-                                                        {q.userAnswer
-                                                            ? q.userAnswer
-                                                            : 'Not answered yet'}
+                                                        <strong>Answer:</strong> {q.answer}
                                                     </div>
                                                 </div>
                                             </div>
@@ -225,7 +224,7 @@ export default function QuestionsEditor({ qid }: { qid: any }) {
                                             {/* Question text */}
                                             <div className="mb-3">
                                                 <label
-                                                    htmlFor={`question-${q.id}`}
+                                                    htmlFor={`question-${q._id}`}
                                                     className="form-label"
                                                 >
                                                     Question Text
@@ -233,12 +232,12 @@ export default function QuestionsEditor({ qid }: { qid: any }) {
                                                 <input
                                                     type="text"
                                                     className="form-control"
-                                                    id={`question-${q.id}`}
-                                                    value={q.name}
+                                                    id={`question-${q._id}`}
+                                                    value={q.title}
                                                     onChange={(e) =>
                                                         handleQuestionChange(
-                                                            q.id,
-                                                            'name',
+                                                            q._id,
+                                                            'title',
                                                             e.target.value
                                                         )
                                                     }
@@ -266,36 +265,37 @@ export default function QuestionsEditor({ qid }: { qid: any }) {
                                                                         value={opt}
                                                                         onChange={(e) => {
                                                                             const newOptions = [
-                                                                                ...q.options,
+                                                                                ...(q.options as string[]),
                                                                             ];
                                                                             newOptions[idx] =
                                                                                 e.target.value;
                                                                             handleQuestionChange(
-                                                                                q.id,
+                                                                                q._id,
                                                                                 'options',
                                                                                 newOptions
                                                                             );
                                                                         }}
                                                                     />
-                                                                    {q.options.length > 2 && (
+                                                                    {(q.options as string[])
+                                                                        .length > 2 && (
                                                                         <button
                                                                             className="btn btn-outline-danger"
                                                                             type="button"
                                                                             onClick={() => {
-                                                                                const newOptions =
-                                                                                    q.options.filter(
-                                                                                        (_, i) =>
-                                                                                            i !==
-                                                                                            idx
-                                                                                    );
+                                                                                const newOptions = (
+                                                                                    q.options as string[]
+                                                                                ).filter(
+                                                                                    (_, i) =>
+                                                                                        i !== idx
+                                                                                );
                                                                                 handleQuestionChange(
-                                                                                    q.id,
+                                                                                    q._id,
                                                                                     'options',
                                                                                     newOptions
                                                                                 );
                                                                             }}
                                                                         >
-                                                                            <i className="bi bi-trash"></i>{' '}
+                                                                            <i className="bi bi-trash"></i>
                                                                             Remove
                                                                         </button>
                                                                     )}
@@ -310,7 +310,7 @@ export default function QuestionsEditor({ qid }: { qid: any }) {
                                                                         '',
                                                                     ];
                                                                     handleQuestionChange(
-                                                                        q.id,
+                                                                        q._id,
                                                                         'options',
                                                                         newOptions
                                                                     );
@@ -318,16 +318,15 @@ export default function QuestionsEditor({ qid }: { qid: any }) {
                                                             >
                                                                 Add Option
                                                             </button>
-                                                            ; ; ;
                                                         </>
                                                     )}
                                                 </div>
                                             )}
 
-                                            {/* Actual answer */}
+                                            {/* Answer */}
                                             <div className="mb-3">
                                                 <label
-                                                    htmlFor={`answer-${q.id}`}
+                                                    htmlFor={`answer-${q._id}`}
                                                     className="form-label"
                                                 >
                                                     Correct Answer
@@ -335,12 +334,12 @@ export default function QuestionsEditor({ qid }: { qid: any }) {
                                                 {q.type === 'multiple-choice' ? (
                                                     <select
                                                         className="form-select"
-                                                        id={`answer-${q.id}`}
-                                                        value={q.actualAnswer}
+                                                        id={`answer-${q._id}`}
+                                                        value={q.answer}
                                                         onChange={(e) =>
                                                             handleQuestionChange(
-                                                                q.id,
-                                                                'actualAnswer',
+                                                                q._id,
+                                                                'answer',
                                                                 e.target.value
                                                             )
                                                         }
@@ -360,12 +359,12 @@ export default function QuestionsEditor({ qid }: { qid: any }) {
                                                 ) : q.type === 'tf' ? (
                                                     <select
                                                         className="form-select"
-                                                        id={`answer-${q.id}`}
-                                                        value={q.actualAnswer}
+                                                        id={`answer-${q._id}`}
+                                                        value={q.answer}
                                                         onChange={(e) =>
                                                             handleQuestionChange(
-                                                                q.id,
-                                                                'actualAnswer',
+                                                                q._id,
+                                                                'answer',
                                                                 e.target.value
                                                             )
                                                         }
@@ -377,12 +376,12 @@ export default function QuestionsEditor({ qid }: { qid: any }) {
                                                     <input
                                                         type="text"
                                                         className="form-control"
-                                                        id={`answer-${q.id}`}
-                                                        value={q.actualAnswer}
+                                                        id={`answer-${q._id}`}
+                                                        value={q.answer}
                                                         onChange={(e) =>
                                                             handleQuestionChange(
-                                                                q.id,
-                                                                'actualAnswer',
+                                                                q._id,
+                                                                'answer',
                                                                 e.target.value
                                                             )
                                                         }
@@ -393,8 +392,15 @@ export default function QuestionsEditor({ qid }: { qid: any }) {
                                             <div className="d-flex justify-content-end">
                                                 <button
                                                     type="button"
+                                                    className="btn btn-danger me-2"
+                                                    onClick={() => deleteQuestion(q._id)}
+                                                >
+                                                    Delete
+                                                </button>
+                                                <button
+                                                    type="button"
                                                     className="btn btn-primary"
-                                                    onClick={() => saveQuestion(q.id)}
+                                                    onClick={() => saveQuestion(q._id)}
                                                 >
                                                     Save Changes
                                                 </button>
@@ -407,7 +413,7 @@ export default function QuestionsEditor({ qid }: { qid: any }) {
                     ))}
                 </div>
             </div>
-            ;{/* Add Question Modal */}
+            {/* Add Question Modal */}
             {showModal && (
                 <div
                     className="modal d-block"
@@ -431,11 +437,11 @@ export default function QuestionsEditor({ qid }: { qid: any }) {
                                         type="text"
                                         className="form-control"
                                         placeholder="Enter question"
-                                        value={newQuestion.name}
+                                        value={newQuestion.title}
                                         onChange={(e) =>
                                             setNewQuestion({
                                                 ...newQuestion,
-                                                name: e.target.value,
+                                                title: e.target.value,
                                             })
                                         }
                                     />
@@ -521,11 +527,11 @@ export default function QuestionsEditor({ qid }: { qid: any }) {
                                     {newQuestion.type === 'multiple-choice' ? (
                                         <select
                                             className="form-select"
-                                            value={newQuestion.actualAnswer || ''}
+                                            value={newQuestion.answer || ''}
                                             onChange={(e) =>
                                                 setNewQuestion({
                                                     ...newQuestion,
-                                                    actualAnswer: e.target.value,
+                                                    answer: e.target.value,
                                                 })
                                             }
                                         >
@@ -539,11 +545,11 @@ export default function QuestionsEditor({ qid }: { qid: any }) {
                                     ) : newQuestion.type === 'tf' ? (
                                         <select
                                             className="form-select"
-                                            value={newQuestion.actualAnswer || ''}
+                                            value={newQuestion.answer || ''}
                                             onChange={(e) =>
                                                 setNewQuestion({
                                                     ...newQuestion,
-                                                    actualAnswer: e.target.value,
+                                                    answer: e.target.value,
                                                 })
                                             }
                                         >
@@ -556,11 +562,11 @@ export default function QuestionsEditor({ qid }: { qid: any }) {
                                             type="text"
                                             className="form-control"
                                             placeholder="Enter correct answer"
-                                            value={newQuestion.actualAnswer || ''}
+                                            value={newQuestion.answer || ''}
                                             onChange={(e) =>
                                                 setNewQuestion({
                                                     ...newQuestion,
-                                                    actualAnswer: e.target.value,
+                                                    answer: e.target.value,
                                                 })
                                             }
                                         />
@@ -579,8 +585,8 @@ export default function QuestionsEditor({ qid }: { qid: any }) {
                                     className="btn btn-success"
                                     onClick={handleAddQuestion}
                                     disabled={
-                                        !newQuestion.name ||
-                                        !newQuestion.actualAnswer ||
+                                        !newQuestion.title ||
+                                        !newQuestion.answer ||
                                         (newQuestion.type === 'multiple-choice' &&
                                             (!newQuestion.options ||
                                                 newQuestion.options.length < 2))

@@ -1,5 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button, Form, FormLabel } from 'react-bootstrap';
+import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import * as client from './client';
 
 export default function QuizzPreview({
     qid,
@@ -8,86 +11,127 @@ export default function QuizzPreview({
     qid: string;
     maxAttempts?: number;
 }) {
-    // TODO: update to fetch attempts
+    // TODO: CHANGE TO quiz data
     // const maxAttempts = 3;
+    const courseId = 'RS101';
+    const quizId = 'Q101'; // Use passed quizId
+    const { currentUser } = useSelector((state: any) => state.accountReducer);
+    const showCorrectAnswers = false;
+    const multipleAttempts = true;
 
     // Define question type
     type Question = {
-        id: number;
-        name: string;
-        type: string; // Changed from strict union type to allow any string
+        _id: string;
+        title: string;
+        type: string;
         options?: string[];
-        actualAnswer: string;
+        answer: string;
         userAnswer: string;
         editing: string;
+        quizId: string;
         points: number;
     };
 
     // Define attempt type to store previous attempts
     type Attempt = {
+        attemptNumber: number;
+        answers: string[];
         score: number;
         totalPoints: number;
         date: Date;
     };
 
+    const [canTake, setCanTake] = useState<boolean>(true);
     const [attempts, setAttempts] = useState<Attempt[]>([]);
     const [showAttempts, setShowAttempts] = useState<boolean>(false);
-
-    // Initialize questions with the existing data
-    const initialQuestions: Question[] = [
-        {
-            id: 1,
-            name: 'What is your name?',
-            type: 'fb',
-            actualAnswer: 'vinay',
-            userAnswer: '',
-            editing: 'false',
-            points: 1,
-        },
-        {
-            id: 2,
-            name: 'Is your age 100?',
-            type: 'tf',
-            options: ['true', 'false'],
-            actualAnswer: 'false',
-            userAnswer: '',
-            editing: 'false',
-            points: 1,
-        },
-        {
-            id: 3,
-            name: 'What is your favorite color?',
-            type: 'multiple-choice',
-            options: ['Red', 'Blue', 'Green'],
-            actualAnswer: 'red',
-            userAnswer: '',
-            editing: 'false',
-            points: 1,
-        },
-    ];
-
-    // State to track the questions and user answers
-    const [questions, setQuestions] = useState<Question[]>(initialQuestions);
+    const [questions, setQuestions] = useState<Question[]>([]);
     const [submitted, setSubmitted] = useState(false);
     const [score, setScore] = useState(0);
 
-    // Handle form input changes
-    const handleInputChange = (questionId: number, value: string) => {
-        setQuestions((prevQuestions) =>
-            prevQuestions.map((q) => (q.id === questionId ? { ...q, userAnswer: value } : q))
-        );
+    // Initialize questions with the existing data
+    const getQuestions = async (quizId: string) => {
+        try {
+            const initialQuestions = await client.getQuestions(quizId);
+
+            // Ensure each question has a unique ID and initialize userAnswer
+            const qs = initialQuestions.map((q: any) => ({
+                ...q,
+                userAnswer: '',
+            }));
+
+            try {
+                // Try to get previous answers
+                const result = await client.getMaxAttempts(quizId, currentUser._id);
+
+                // Check if result exists before destructuring
+                if (result) {
+                    const { answers } = result;
+
+                    // Update each question's userAnswer with previous answers
+                    if (answers && Array.isArray(answers)) {
+                        answers.forEach((answer: string, index: number) => {
+                            if (index < qs.length) {
+                                qs[index].userAnswer = answer;
+                            }
+                        });
+                    }
+                }
+            } catch (error: any) {
+                // Only check for 404 error
+                if (error.status === 404) {
+                    console.log('No previous attempts found');
+                    // Do nothing, questions already have empty userAnswers
+                } else {
+                    // For any other error, re-throw it
+                    throw error;
+                }
+            }
+
+            setQuestions(qs);
+        } catch (error) {
+            console.error('Error fetching questions:', error);
+        }
+    };
+
+    // Handle form input changes - fixed to ensure only the right question updates
+    const handleInputChange = (questionId: string, value: string) => {
+        setQuestions((prevQuestions) => {
+            return prevQuestions.map((q) => {
+                // Only update the specific question
+                if (q._id === questionId) {
+                    return { ...q, userAnswer: value };
+                }
+                // Return other questions unchanged
+                return q;
+            });
+        });
     };
 
     // Submit quiz and calculate score
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         let currentScore = 0;
-
+        let answers: string[] = [];
         questions.forEach((q) => {
-            if (q.userAnswer.toLowerCase() === q.actualAnswer.toLowerCase()) {
+            answers.push(q.userAnswer);
+            if (q.userAnswer.toLowerCase() === q.answer.toLowerCase()) {
                 currentScore += q.points;
             }
         });
 
+        // Store current attempt
+        const newAttempt: Attempt = {
+            score: currentScore,
+            answers: answers,
+            attemptNumber: attempts.length + 1,
+            totalPoints: questions.reduce((acc, q) => acc + q.points, 0),
+            date: new Date(),
+        };
+        if (!isFaculty()) {
+            await client.putAttempt(currentUser._id, quizId, newAttempt);
+        }
+        setAttempts((prev) => [...prev, newAttempt]);
+
+        checkAttempts();
         setScore(currentScore);
         setSubmitted(true);
     };
@@ -95,26 +139,31 @@ export default function QuizzPreview({
     // Reset the quiz
     const handleReset = () => {
         // Check if we've reached the maximum number of attempts
-        if (attempts.length >= maxAttempts - 1) {
+        if (attempts.length > maxAttempts - 1 && !isFaculty()) {
             return; // Don't allow any more attempts
         }
-        // Store current attempt
-        if (submitted) {
-            const newAttempt: Attempt = {
-                score: score,
-                totalPoints: totalPoints,
-                date: new Date(),
-            };
 
-            setAttempts((prev) => [...prev, newAttempt]);
-        }
+        // // Store current attempt
+        // if (submitted) {
+        //     const totalPoints = questions.reduce((acc, q) => acc + q.points, 0);
+        //     const newAttempt: Attempt = {
+        //         score: score,
+        //         totalPoints: totalPoints,
+        //         date: new Date(),
+        //     };
 
-        setQuestions(() =>
-            initialQuestions.map((q) => ({
+        //     setAttempts((prev) => [...prev, newAttempt]);
+        // }
+
+        // Reset all questions' userAnswers to empty strings
+
+        setQuestions((prevQuestions) =>
+            prevQuestions.map((q) => ({
                 ...q,
                 userAnswer: '',
             }))
         );
+
         setSubmitted(false);
         setScore(0);
     };
@@ -131,50 +180,35 @@ export default function QuizzPreview({
 
     // Render different input types based on question type
     const renderQuestionInput = (question: Question) => {
+        const handleChange = (questionId: string, value: string) => {
+            handleInputChange(questionId, value);
+        };
         switch (question.type) {
             case 'fb':
                 return (
                     <Form.Control
                         type="text"
                         value={question.userAnswer}
-                        onChange={(e) => handleInputChange(question.id, e.target.value)}
-                        disabled={submitted}
+                        onChange={(e) => handleChange(question._id, e.target.value)}
+                        disabled={submitted || !canTake}
                         className="mb-3"
                     />
                 );
             case 'tf':
-                return (
-                    <div className="mb-3">
-                        {question.options?.map((option, index) => (
-                            <Form.Check
-                                key={index}
-                                type="radio"
-                                id={`q${question.id}-option${index}`}
-                                label={option}
-                                name={`question-${question.id}`}
-                                value={option}
-                                checked={question.userAnswer === option}
-                                onChange={(e) => handleInputChange(question.id, e.target.value)}
-                                disabled={submitted}
-                                className="mb-1"
-                            />
-                        ))}
-                    </div>
-                );
             case 'multiple-choice':
                 return (
                     <div className="mb-3">
                         {question.options?.map((option, index) => (
                             <Form.Check
-                                key={index}
+                                key={`q${question._id}-option${index}`}
                                 type="radio"
-                                id={`q${question.id}-option${index}`}
+                                id={`q${question._id}-option${index}`}
                                 label={option}
-                                name={`question-${question.id}`}
+                                name={`question-${question._id}`}
                                 value={option}
                                 checked={question.userAnswer === option}
-                                onChange={(e) => handleInputChange(question.id, e.target.value)}
-                                disabled={submitted}
+                                onChange={(e) => handleChange(question._id, e.target.value)}
+                                disabled={submitted || !canTake}
                                 className="mb-1"
                             />
                         ))}
@@ -187,16 +221,14 @@ export default function QuizzPreview({
 
     // Display feedback after submission
     const renderFeedback = (question: Question) => {
-        // if question instant display setting is on then display else dont
         if (!submitted) return null;
 
-        const isCorrect = question.userAnswer.toLowerCase() === question.actualAnswer.toLowerCase();
+        const isCorrect = question.userAnswer.toLowerCase() === question.answer.toLowerCase();
 
         return (
             <div className={`mt-2 ${isCorrect ? 'text-success' : 'text-danger'}`}>
-                {isCorrect
-                    ? '✓ Correct'
-                    : `✗ Incorrect. The correct answer is: ${question.actualAnswer}`}
+                {isCorrect ? '✓ Correct' : `✗ Incorrect.`}
+                {showCorrectAnswers && `The correct answer is: ${question.answer}`}
             </div>
         );
     };
@@ -210,7 +242,6 @@ export default function QuizzPreview({
         }
 
         const allScores = [...attempts.map((a) => a.score), ...(submitted ? [score] : [])];
-
         return Math.max(...allScores);
     };
 
@@ -219,17 +250,54 @@ export default function QuizzPreview({
         const highest = getHighestScore();
         return highest !== null ? Math.round((highest / totalPoints) * 100) : null;
     };
+    const getAttempts = async (quizId: any, userId: any) => {
+        const oldAttempts = await client.getAttempts(quizId, userId);
+        setAttempts(oldAttempts);
+        checkAttempts();
+    };
+    const checkAttempts = () => {
+        if (isFaculty()) return;
+        if (attempts.length >= maxAttempts) {
+            setCanTake(false);
+        }
+    };
+    const isFaculty = () => {
+        return currentUser.role === 'FACULTY';
+    };
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        getQuestions(quizId);
+        getAttempts(quizId, currentUser._id);
+    }, [quizId]);
+
+    useEffect(() => {
+        checkAttempts();
+    }, [attempts]);
 
     return (
         <div className="container py-4">
-            {/* TODO: if user is faculty show prevoew else show Quizz 'ta/e' */}
-            <h2 className="mb-4">Quiz Preview</h2>
+            <div className="d-flex align-items-center">
+                <h2 className="mb-4 me-auto">{isFaculty()? 'Quiz Preview': 'Quiz'}</h2>
+                {/* Edit button next to the title */}
+                {isFaculty() && (
+                    <button
+                        className="btn btn-outline-danger"
+                        //TODO:Update the naviagation
+                        onClick={() => navigate(`/Kambaz/Courses/${courseId}/Quizzes/${quizId}`)}
+                    >
+                        Edit
+                    </button>
+                )}
+            </div>
 
             {/* Attempts information */}
             <div className="mb-3 d-flex justify-content-between align-items-center">
                 <div>
-                    <span className="badge bg-info">
-                        Attempt {attempts.length + (submitted ? 1 : 0)} of {maxAttempts}
+                    <span className="badge bg-danger">
+                        {!isFaculty()
+                            ? `Attempt ${attempts.length} of ${maxAttempts}`
+                            : `Attempt ${attempts.length}`}
                     </span>
                 </div>
                 {score > 0 && submitted && (
@@ -246,7 +314,7 @@ export default function QuizzPreview({
             </div>
 
             {/* Display previous attempts if there are any */}
-            {attempts.length > 0 && (
+            {multipleAttempts && attempts.length > 0 && (
                 <div className="mb-4">
                     <Button
                         variant="outline-secondary"
@@ -284,16 +352,6 @@ export default function QuizzPreview({
                                             </td>
                                         </tr>
                                     ))}
-                                    {submitted && (
-                                        <tr className="table-active">
-                                            <td>{attempts.length + 1} (Current)</td>
-                                            <td>{formatDate(new Date())}</td>
-                                            <td>
-                                                {score}/{totalPoints} (
-                                                {Math.round((score / totalPoints) * 100)}%)
-                                            </td>
-                                        </tr>
-                                    )}
                                 </tbody>
                                 <tfoot>
                                     <tr className="table-info">
@@ -321,11 +379,11 @@ export default function QuizzPreview({
             {/* Quiz form */}
             <Form>
                 {questions.map((q, index) => (
-                    <div key={q.id} className="mb-4 p-3 border rounded">
+                    <div key={`question-${q._id}-${index}`} className="mb-4 p-3 border rounded">
                         <h5>Question {index + 1}</h5>
                         <FormLabel>
-                            {q.name}
-                            <small>
+                            {q.title}
+                            <small className="ms-2">
                                 ({q.points} {q.points === 1 ? 'point' : 'points'})
                             </small>
                         </FormLabel>
@@ -335,20 +393,19 @@ export default function QuizzPreview({
                 ))}
 
                 <div className="d-flex gap-2 mt-4">
-                    {!submitted ? (
-                        <Button type="submit" variant="primary" onClick={handleSubmit}>
+                    {!submitted && canTake ? (
+                        <Button type="button" variant="primary" onClick={handleSubmit}>
                             Submit Quiz
                         </Button>
                     ) : (
                         <>
-                            {attempts.length < maxAttempts - 1 ? (
+                            {canTake ? (
                                 <Button variant="primary" onClick={handleReset}>
-                                    Retake Quiz ({maxAttempts - attempts.length - 1} attempts
-                                    remaining)
-                                </Button>
-                            ) : attempts.length === maxAttempts - 1 ? (
-                                <Button variant="secondary" onClick={handleReset}>
-                                    No Attempts Remaining
+                                    {isFaculty()
+                                        ? 'Retake Quiz'
+                                        : `Retake Quiz (${
+                                              maxAttempts - attempts.length
+                                          } attempts remaining)`}
                                 </Button>
                             ) : (
                                 <Button variant="secondary" disabled>

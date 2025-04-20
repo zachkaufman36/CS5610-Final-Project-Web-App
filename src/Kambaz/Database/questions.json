@@ -1,0 +1,36 @@
+[{
+  "_id": "1",
+  "title": "What is your name?",
+  "type": "fb",
+  "answer": "vinay",
+  "editing": "false",
+  "quizId": "Q101",
+  "points": "1"
+},
+{
+  "_id": "2",
+  "title": "Is your age 100?",
+  "type": "tf",
+  "options": [
+    "true",
+    "false"
+  ],
+  "answer": "false",
+  "quizId": "Q101",
+  "editing": "false",
+  "points": "1"
+},
+{
+  "_id": "3",
+  "title": "What is your favorite color?",
+  "type": "multiple-choice",
+  "options": [
+    "Red",
+    "Blue",
+    "Green"
+  ],
+  "answer": "red",
+  "quizId": "Q101",
+  "editing": "false",
+  "points": "1"
+}]

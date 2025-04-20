@@ -1,5 +1,5 @@
 import axios from "axios";
-
+const axiosWithCredentials = axios.create({ withCredentials: true });
 const REMOTE_SERVER = import.meta.env.VITE_REMOTE_SERVER;
 const COURSES_API = `${REMOTE_SERVER}/api/courses`;
 export const fetchAllCourses = async () => {
@@ -46,13 +46,13 @@ export const createAssignmentForCourse = async (courseId: string, assignment: an
 };
 
 export const findQuizzesForCourse = async (courseId: string) => {
-  const response = await axios
+  const response = await axiosWithCredentials
     .get(`${COURSES_API}/${courseId}/Quizzes`);
   return response.data;
 };
 
 export const createQuizForCourse = async (courseId: string, quiz: any) => {
-  const response = await axios.post(
+  const response = await axiosWithCredentials.post(
     `${COURSES_API}/${courseId}/Quizzes`,
     quiz
   );

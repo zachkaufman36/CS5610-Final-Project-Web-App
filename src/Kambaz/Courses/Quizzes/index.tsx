@@ -23,17 +23,23 @@ export default function Quizzes( {cid} : { cid: string }) {
   };
 
   const fetchQuizzes = async () => {
-    const quizzes = await coursesClient.findQuizzesForCourse(cid as string);
+    const quizzes = await coursesClient.findQuizzesForCourse(cid! as string);
     dispatch(setQuizzes(quizzes));
   };
+
   useEffect(() => {
-    fetchQuizzes();
-  }, []);
+    const timer = setTimeout(() => {
+      fetchQuizzes();
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [cid]);
 
   function compareDates({ due_date, available_date }: { due_date: string; available_date: string }) {
     const currentDate = new Date();
     const quiz_due_date = new Date(due_date);
     const quiz_available_date = new Date(available_date);
+
+    console.log(due_date);
 
     if (quiz_available_date > currentDate) {
       return "Not available until"
@@ -56,11 +62,9 @@ export default function Quizzes( {cid} : { cid: string }) {
             <ListGroup className="wd-lessons rounded-0">
             <ListGroup.Item className="wd-lesson p-3 ps-1" key={quiz._id}>
             <BsGripVertical className="me-2 fs-3" /> <IoIosPaper className="text-success me-2 fs-3"/> 
-            {/* <a href={`#/Kambaz/Courses/${cid}/Assignments/${assignment._id}`} className="wd-assignment-link" style={{ color: "black", textDecoration: "None"}}>
-              <b>{assignment.title}</b>
-            </a> */}
+            
             <QuizName quizTitle={quiz.title} quizId={quiz._id} />
-            <span> <b>{compareDates({due_date: quiz.due_date, available_date: quiz.available_date})} | </b> {quiz.available_date} | Due {quiz.due_date} | {quiz.points}</span> <QuizStatus quiz = {quiz} quizPublished={quiz.published} cid = {cid} quizId = {quiz._id}
+            <span> <b>{compareDates({due_date: quiz.due, available_date: quiz.availableFrom})} | </b> {quiz.availableFrom} | Due {quiz.due} | {quiz.points} pts | {quiz.questionCount} Questions </span> <QuizStatus quiz = {quiz} quizPublished={quiz.published} cid = {cid} quizId = {quiz._id}
             deleteQuiz={(quizId) => {removeQuiz(quizId)}}/> </ListGroup.Item>
           </ListGroup>
           )) }
@@ -73,11 +77,9 @@ export default function Quizzes( {cid} : { cid: string }) {
             <ListGroup className="wd-lessons rounded-0">
             <ListGroup.Item className="wd-lesson p-3 ps-1" key={quiz._id}>
             <BsGripVertical className="me-2 fs-3" /> <IoIosPaper className="text-success me-2 fs-3"/> 
-            {/* <a href={`#/Kambaz/Courses/${cid}/Assignments/${assignment._id}`} className="wd-assignment-link" style={{ color: "black", textDecoration: "None"}}>
-              <b>{assignment.title}</b>
-            </a> */}
+            
             <QuizName quizTitle={quiz.title} quizId={quiz._id} />
-            <span> <b>{compareDates({due_date: quiz.due_date, available_date: quiz.available_date})} | </b> {quiz.available_date} | Due {quiz.due_date} | {quiz.points}</span> <QuizStatus quiz = {quiz} quizPublished={quiz.published} cid = {cid} quizId = {quiz._id}
+            <span> <b>{compareDates({due_date: quiz.due, available_date: quiz.availableFrom})} | </b> {quiz.availableFrom} | Due {quiz.due} | {quiz.points} pts | {quiz.questionCount} Questions </span> <QuizStatus quiz = {quiz} quizPublished={quiz.published} cid = {cid} quizId = {quiz._id}
             deleteQuiz={(quizId) => {removeQuiz(quizId)}}/> </ListGroup.Item>
           </ListGroup>
           )) }
@@ -119,7 +121,7 @@ export default function Quizzes( {cid} : { cid: string }) {
         <ListGroup className="rounded-0" id="wd-modules">
           <ListGroup.Item className="wd-module p-0 mb-5 fs-5 border-gray">
             <div className="wd-title p-3 ps-2 bg-secondary"> <BsGripVertical className="me-2 fs-3" /> Quizzes <QuizModuleControls /> </div>
-            { /* Ask about how to get the visual style that they want. Page 98 is an example */ }
+            
             {publishedOrNot()}
           </ListGroup.Item> 
         </ListGroup>

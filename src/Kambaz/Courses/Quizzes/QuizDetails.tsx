@@ -8,7 +8,8 @@ export default function QuizDetails() {
     const { qid } = useParams();
     const { quizzes } = useSelector((state: any) => state.quizReducer);
     const filteredQuiz = quizzes.find((quiz: any) => quiz._id === qid);
-    const dontDisplay = ['_id', 'published', 'title', 'course', 'due_date', 'available_date', 'until_date', 'access_code', 'instructions']
+    console.log(filteredQuiz);
+    const dontDisplay = ['_id', 'published', 'title', 'course', 'due', 'availableFrom', 'availableUntil', 'accessCode', 'instructions']
 
     function createTable() {
         const keysToDisplay = Object.keys(filteredQuiz).filter(key => !dontDisplay.includes(key));
@@ -17,11 +18,13 @@ export default function QuizDetails() {
             return key.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
         };
 
-        const formatAnswer = (ans: string) => {
-            if (ans) {
-                return "No"
-            } else if (!ans) {
-                return "Yes"
+        const formatAnswer = (ans: any) => {
+            if (typeof ans === "boolean") {
+                if (!ans) {
+                    return "No"
+                } else if (ans) {
+                    return "Yes"
+                }
             } else {
                 return ans
             }
@@ -59,10 +62,10 @@ export default function QuizDetails() {
                 </thead>
                 <tbody>
                     <tr style={{ borderTop: "1px solid #dee2e6", borderBottom: "1px solid #dee2e6" }}>
-                        <td>{filteredQuiz.due_date}</td>
+                        <td>{filteredQuiz.due}</td>
                         <td>filler</td>
-                        <td>{filteredQuiz.available_date}</td>
-                        <td>{filteredQuiz.until_date}</td>
+                        <td>{filteredQuiz.availableFrom}</td>
+                        <td>{filteredQuiz.availableUntil}</td>
                     </tr>
                 </tbody>
             </table>

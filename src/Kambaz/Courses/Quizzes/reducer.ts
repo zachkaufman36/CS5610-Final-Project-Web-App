@@ -8,20 +8,12 @@ const assignmentsSlice = createSlice({
     name: "quizzes",
     initialState,
     reducers: {
-        setQuizzes: (state, action) => {
-            state.quizzes = action.payload;
+        setQuizzes: (state, {payload: quizzes}) => {
+            state.quizzes = quizzes;
         },
 
-        addQuiz: (state, { payload: assignment }) => {
-            const newAssignment: any = {
-                _id: uuidv4(),
-                title: assignment.title,
-                course: assignment.course,
-                release_date: assignment.release_date,
-                due_date: assignment.due_date,
-                points: assignment.points
-              };
-              state.quizzes = [...state.quizzes, newAssignment] as any;
+        addQuiz: (state, { payload: quiz }) => {
+              state.quizzes = [...state.quizzes, quiz] as any;
         },
         
         deleteQuiz: (state, { payload: quizId }) => {

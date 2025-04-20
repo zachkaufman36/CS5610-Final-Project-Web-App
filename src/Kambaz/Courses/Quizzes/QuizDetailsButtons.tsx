@@ -16,7 +16,7 @@ export default function QuizDetailsButtons({ cid, qid } : { cid: string; qid: st
                         Edit
                     </Button>
 
-                    {/*Needs to send the user somewhere*/}
+                    {/* INSERT ROUTE INTO TAKING THE QUIZ */}
                     <Button variant="secondary" size="lg" className="me-1 float-end" id="wd-preview-quiz-btn" > 
                         Preview
                     </Button>
@@ -27,6 +27,7 @@ export default function QuizDetailsButtons({ cid, qid } : { cid: string; qid: st
         else {
             return (
                 <div>
+                    {/* INSERT ROUTE INTO TAKING THE QUIZ */}
                     <Button variant="danger" size="lg" className="me-1 float-end" id="wd-preview-quiz-btn" > 
                         Take Quiz
                     </Button>

@@ -1,0 +1,26 @@
+[
+    { 
+        "_id": "Q101",
+        "published": false,
+        "title": "Something long enough",
+        "instructions": "Some filler stuff",
+        "course": "RS101",
+        "quizType": "Graded Quiz",
+        "points": 100,
+        "assignmentGroup": "Quizzes",
+        "shuffleAnswers": true,
+        "timeLimitBool": true,
+        "timeLimit": 20,
+        "allowMultipleAttempts": false,
+        "attemptsAllowed": 1,
+        "showCorrectAnswers": true,
+        "accessCodeBool": false,
+        "accessCode": "",
+        "oneQuestionAtATime": true,
+        "webcamRequired": false,
+        "lockAfterAnswer": false, 
+        "due": "March 13, 2025 12:00AM", 
+        "availableFrom": "March 6, 2025 12:00AM",
+        "availableUntil": "March 13, 2025 12:00AM"
+    }
+]

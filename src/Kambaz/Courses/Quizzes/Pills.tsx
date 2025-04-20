@@ -11,7 +11,6 @@ export default function Pills() {
                 <Nav.Link as={Link} to={`${basePath}/details`} id="wd-details" active={!pathname.includes("questions")}>Details</Nav.Link>
             </Nav.Item>
             <Nav.Item>
-              {/* INSERT ROUTE TO MAKING NEW QUESTIONS */}
                 <Nav.Link as={Link} to={`${basePath}/questions`} id="wd-question-editor" active={pathname.includes("questions")}>Questions</Nav.Link>
             </Nav.Item>
         </Nav>

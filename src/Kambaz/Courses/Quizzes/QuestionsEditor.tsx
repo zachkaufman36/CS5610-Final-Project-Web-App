@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import * as client from './client';
 import { useParams } from 'react-router';
+import Pills from './Pills';
 export default function QuestionsEditor() {
     const { qid } = useParams();
     const quizId = qid!;
@@ -164,6 +165,7 @@ export default function QuestionsEditor() {
     
     return (
         <div id="quiz-questions-editor" className="container py-4">
+            <Pills /><hr />
             <div className="d-flex justify-content-between align-items-center mb-4">
                 <h1 className="h4 fw-bold">Questions Editor</h1>
                 <button className="btn btn-outline-danger" onClick={() => setShowModal(true)}>

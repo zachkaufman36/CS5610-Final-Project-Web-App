@@ -17,7 +17,7 @@ export default function QuizDetailsButtons({ cid, qid } : { cid: string; qid: st
                     </Button>
 
                     {/* INSERT ROUTE INTO TAKING THE QUIZ */}
-                    <Button variant="secondary" size="lg" className="me-1 float-end" id="wd-preview-quiz-btn" onClick={() => {navigate(`Kambaz/Courses/${cid}/Quizzes/${qid}/takeQuiz`)}}> 
+                    <Button variant="secondary" size="lg" className="me-1 float-end" id="wd-preview-quiz-btn" onClick={() => {navigate(`/Kambaz/Courses/${cid}/Quizzes/${qid}/takeQuiz`)}}> 
                         Preview
                     </Button>
                 </div>
@@ -28,7 +28,7 @@ export default function QuizDetailsButtons({ cid, qid } : { cid: string; qid: st
             return (
                 <div>
                     {/* INSERT ROUTE INTO TAKING THE QUIZ */}
-                    <Button variant="danger" size="lg" className="me-1 float-end" id="wd-preview-quiz-btn" > 
+                    <Button variant="danger" size="lg" className="me-1 float-end" id="wd-preview-quiz-btn" onClick={() => {navigate(`/Kambaz/Courses/${cid}/Quizzes/${qid}/takeQuiz`)}}> 
                         Take Quiz
                     </Button>
                 </div>

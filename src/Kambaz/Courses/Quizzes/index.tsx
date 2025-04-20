@@ -39,8 +39,6 @@ export default function Quizzes( {cid} : { cid: string }) {
     const quiz_due_date = new Date(due_date);
     const quiz_available_date = new Date(available_date);
 
-    console.log(due_date);
-
     if (quiz_available_date > currentDate) {
       return "Not available until"
     }

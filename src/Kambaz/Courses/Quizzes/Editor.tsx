@@ -1,13 +1,13 @@
-import { Col, Form, FormControl, Row } from "react-bootstrap";
-import QuizEditorButtons from "./QuizEditorButtons";
-import { useParams } from "react-router";
-import { updateQuiz, addQuiz } from "./reducer";
-import "./editor.css";
-import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useState } from "react";
+import { Col, Form, FormControl, Row } from "react-bootstrap";
+import { useDispatch, useSelector } from "react-redux";
+import { useParams } from "react-router";
 import * as coursesClient from "../client";
 import * as quizzesClient from "./client";
+import "./editor.css";
 import Pills from "./Pills";
+import QuizEditorButtons from "./QuizEditorButtons";
+import { addQuiz, updateQuiz } from "./reducer";
 
 export default function QuizEditor({ cid }:
     {cid: string}
@@ -110,7 +110,7 @@ export default function QuizEditor({ cid }:
             timeLimitBool: true, 
             timeLimit: "20", 
             allowMultipleAttempts: false, 
-            attempts: "1",
+            attemptsAllowed: "1",
             showCorrectAnswers: true, //AND WHEN?
             accessCodeBool: false, 
             accessCode: "", 
@@ -183,7 +183,7 @@ export default function QuizEditor({ cid }:
             timeLimitBool: timeLimitBool, 
             timeLimit: timeLimit, 
             allowMultipleAttempts: multipleAttempts, 
-            attempts: multipleAttemptLimit,
+            attemptsAllowed: multipleAttemptLimit,
             showCorrectAnswers: showCorrectAnswers, 
             accessCodeBool: accessCodeBool, 
             accessCode: accessCode, 
@@ -277,7 +277,7 @@ export default function QuizEditor({ cid }:
                         <Form.Group id="wd-multiple-attempts" className="d-flex align-items-center">
                             <Form.Check type="checkbox" id="wd-multiple-attempts-boolean" label="Allow Multiple Attempts" checked={multipleAttempts} onChange={(e) => setMultipleAttempts(e.target.checked)} />
                             <div className="d-flex align-items-center">
-                                <FormControl id="wd-multiple-attempts-number" as="textarea" defaultValue="20" style={{ height: "10px", width: "60px", resize: "none", lineHeight: "1", textAlign: "center", overflow: "hidden" }} className="me-1" onChange={(e) => setMultipleAttemptLimit(e.target.value)} />
+                                <FormControl id="wd-multiple-attempts-number" as="textarea" defaultValue={multipleAttemptLimit} style={{ height: "10px", width: "60px", resize: "none", lineHeight: "1", textAlign: "center", overflow: "hidden" }} className="me-1" onChange={(e) => setMultipleAttemptLimit(e.target.value)} />
                                 <Form.Label htmlFor="time-box" className="mb-0">Attempts</Form.Label>
                             </div>
                         </Form.Group>

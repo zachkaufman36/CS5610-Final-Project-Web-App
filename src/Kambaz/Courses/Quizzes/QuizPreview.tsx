@@ -14,6 +14,7 @@ export default function QuizPreview() {
     const { quizzes } = useSelector((state: any) => state.quizReducer);
     const filteredQuiz = quizzes.find((quiz: any) => quiz._id === qid);
     const { currentUser } = useSelector((state: any) => state.accountReducer);
+    console.log(filteredQuiz);
     const showCorrectAnswers = filteredQuiz.showCorrectAnswers;
     const multipleAttempts = filteredQuiz.allowMultipleAttempts;
     const maxAttempts = filteredQuiz.attemptsAllowed;
@@ -64,6 +65,7 @@ export default function QuizPreview() {
 
                 // Check if result exists before destructuring
                 if (result) {
+                    setScore(result.score);
                     const { answers } = result;
 
                     // Update each question's userAnswer with previous answers
@@ -155,7 +157,6 @@ export default function QuizPreview() {
         // }
 
         // Reset all questions' userAnswers to empty strings
-
         setQuestions((prevQuestions) =>
             prevQuestions.map((q) => ({
                 ...q,

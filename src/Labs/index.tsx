@@ -12,7 +12,7 @@ export default function Labs() {
   return (
     <Provider store={store}>
       <div id="wd-labs" className="container-fluid">
-        <h1>Zachary Kaufman</h1><b /> 
+        <h1>Zachary Kaufman and Vinay Jawadagi</h1><b /> 
         <h1>Online Section Spring 2025</h1>
         <h1>Labs</h1>
         <TOC />
